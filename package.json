@@ -1,0 +1,8 @@
+{
+  "name": "youmna-git-glance", 
+  "version": "1.0.1",
+  "type": "module",
+  "bin": {
+    "git-glance": "./index.js"
+  }
+}
