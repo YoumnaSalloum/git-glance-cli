@@ -4,6 +4,7 @@ import { simpleGit } from 'simple-git';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import 'dotenv/config';
 import { primary, success, accent, error, text, createSpinner, createBox, createProgressBar, log, logError } from './utils/ui.js'; // Updated import
+import fs from 'fs'; // Ensure you have this import at the top
 
 const git = simpleGit();
 
@@ -105,60 +106,51 @@ program
     } catch (err) { spinner.fail(error('Chat failed.')); logError(err.message); }
   });
 
-// 4. AI-Powered Merge Conflict Helper (NEW!)
+// 4. AI-Powered Merge Conflict Helper (FIXED)
 program
   .command('merge-help')
   .description('Analyze and suggest resolutions for merge conflicts')
   .action(async () => {
-    const spinner = createSpinner('Analyzing merge conflicts... 💔', error).start();
+    const spinner = createSpinner('Scanning for 💔 conflicts...').start();
     try {
-      const conflicts = await git.diff(['--check']); // This checks for unresolved conflicts
-      if (!conflicts) {
-        spinner.succeed(success('No merge conflicts detected.'));
+      const status = await git.status();
+      const conflictedFiles = status.conflicted; // Get files that are "unmerged"
+
+      if (conflictedFiles.length === 0) {
+        spinner.succeed(success('No merge conflicts detected! Everything is clean.'));
         return;
       }
 
-      spinner.text = primary('Reading conflict markers...');
-      const conflictedFiles = await git.raw(['diff', '--name-only', '--diff-filter=U']);
       const conflictDetails = [];
-      const files = conflictedFiles.trim().split('\n').filter(Boolean);
-
-      if (files.length === 0) {
-          spinner.succeed(success('No active merge conflicts found.'));
-          return;
+      for (const file of conflictedFiles) {
+        // We read from the disk (worktree) instead of the Git index
+        // This avoids the "Stage 0" error
+        const content = await fs.promises.readFile(file, 'utf8');
+        if (content.includes('<<<<<<<')) {
+          conflictDetails.push(`File: ${file}\n${content}`);
+        }
       }
-      
-      const progressBar = createProgressBar('Processing Files', 30);
-      progressBar.start(files.length, 0);
 
-      for (const [index, file] of files.entries()) {
-          const fileContent = await git.raw(['show', `:${file}`]); // Get content with conflict markers
-          conflictDetails.push(`File: ${file}\nContent:\n${fileContent}`);
-          progressBar.update(index + 1);
+      if (conflictDetails.length === 0) {
+        spinner.fail(error('Conflicted files found, but no markers (<<<<<<<) detected.'));
+        return;
       }
-      progressBar.stop();
-      
-      const prompt = `You are an expert Git merge conflict resolver. Analyze the following merge conflicts and provide a clear explanation for each conflict and suggest the best way to resolve it. Be concise but clear.
-      
-Conflicts:
-${conflictDetails.join('\n---\n').substring(0, 15000)}
 
-Please output your suggestions for each file.`;
-
-      spinner.text = primary('Asking Gemini for merge resolution...');
-      spinner.start();
+      spinner.text = primary('Gemini is resolving the puzzle...');
+      const prompt = `You are a Git Expert. Explain the conflict and suggest a solution for:
+      ${conflictDetails.join('\n\n').substring(0, 8000)}`;
 
       const result = await model.generateContent(prompt);
       spinner.stop();
-      
+
       log(createBox(text(result.response.text()), { 
-        title: '💔 AI Merge Conflict Helper', 
-        borderColor: error.toString() 
+        title: '🛡️ AI Merge Resolution', 
+        borderColor: 'red' 
       }));
 
     } catch (err) {
-      spinner.fail(error('Failed to help with conflicts.'));
-      logError(err.message);
+      spinner.stop();
+      logError("Could not analyze conflicts: " + err.message);
     }
   });
 
