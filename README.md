@@ -25,6 +25,7 @@ Install the tool globally using npm:
 
 ```bash
 npm install -g youmna-git
+```
 ----------
 # 🦋 youmna-git (ygit)
 
@@ -51,24 +52,33 @@ To use the AI features (Commit, Review, Chat), you need to get a free API Key fr
 ---
 
 ## 🚀 Usage
-Simply type ygit to launch the main dashboard, or use specific subcommands:
 
-AI Commands:
+Simply type `ygit` to launch the main dashboard, or use these commands:
 
-# Launch the interactive dashboard
+⭐ **Launch the interactive dashboard**
+```bash
 ygit
+```
 
-# Generate an AI commit message for staged changes
+⭐ **Generate an AI commit message for staged changes**
+```bash
 ygit commit
+```
 
-# Analyze current code diff for bugs
+⭐ **Analyze current code diff for bugs**
+```bash
 ygit review
+```
 
-# Ask a question about your history
+⭐ **Ask a question about your history**
+```bash
 ygit chat "What features did I add yesterday?"
+```
 
-# Get help resolving active merge conflicts
+⭐ **Get help resolving active merge conflicts**
+```bash
 ygit merge-help
+```
 
 
 🤝 Contributing
