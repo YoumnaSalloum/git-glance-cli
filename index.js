@@ -86,7 +86,11 @@ program
       const result = await model.generateContent(prompt);
       
       spinner.stop();
-      log(createBox(text(result.response.text()), { title: '🔍 AI Code Review', borderColor: accent.toString() }));
+
+log(createBox(text(result.response.text()), { 
+    title: '🔍 AI Code Review', 
+    borderColor: 'magenta' 
+}));
     } catch (err) { spinner.fail(error('Review failed.')); logError(err.message); }
   });
 
@@ -144,8 +148,8 @@ program
       spinner.stop();
 
       log(createBox(text(result.response.text()), { 
-        title: '🛡️ AI Merge Resolution', 
-        borderColor: 'red' 
+          title: '🛡️ AI Merge Resolution', 
+          borderColor: 'red' 
       }));
 
     } catch (err) {
