@@ -39,7 +39,7 @@ npm install -g youmna-git
 
 ## 🔑 Setup
 
-To use the AI features (Commit, Review, Chat), you need to get a free API Key from Google:
+create post on linked in
 
 1.  **Get your Key:** Go to [Google AI Studio](https://aistudio.google.com/) and click **"Get API key"**.
 2.  **Add to Environment:** Create a file named `.env` in your project root or add it to your shell profile:
