@@ -25,6 +25,7 @@ Install the tool globally using npm:
 
 ```bash
 npm install -g youmna-git
+```
 ----------
 # 🦋 youmna-git (ygit)
 
