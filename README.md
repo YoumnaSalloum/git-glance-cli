@@ -1,11 +1,9 @@
-# 🦋 youmna-git (ygit)
-
-**The AI-Powered Git Assistant that makes your workflow glide.**
-
-[![npm version](https://img.shields.io/npm/v/youmna-git.svg)](https://www.npmjs.com/package/youmna-git)
+# 🦋 youmna-git-glance (ygit)
+**The Git Assistant with Long-Term Memory.**
+[![npm version](https://img.shields.io/npm/v/youmna-git-glance.svg)](https://www.npmjs.com/package/youmna-git-glance)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-`youmna-git` is a professional-grade CLI tool that transforms your terminal into a smart dashboard. Powered by **Google Gemini 3.0**, it doesn't just show you your git status—it helps you write code, review bugs, and understand your history.
+`youmna-git-glance` is an AI-native CLI that transforms your repository's history into an active knowledge base. Powered by Google Gemini, it uses intelligent keyword extraction to scout your entire commit history, providing AI-powered code reviews, automated professional commits, and context-aware chat that truly understands your codebase.
 
 ---
 
@@ -14,9 +12,10 @@
 - 📊 **Smart Dashboard:** A beautiful, color-coded summary of your branch, changes, and latest commits.
 - 🤖 **Gemini AI Commit:** Instantly generate professional, one-line commit messages by analyzing your file changes.
 - 🔍 **AI Code Review:** Get a senior-level review of your current diff to spot bugs before you push.
-- 💬 **Repo Chat:** Ask questions like "What did I change in the last hour?" and get answers based on your git logs.
+- 💬 **Smart Context Chat:** Ask natural questions about your repository. The AI scans your entire git history using intelligent keyword matching to find relevant commits and deliver context-aware answers.
 - 🛡️ **Merge Helper:** Solve complex merge conflicts with a step-by-step AI resolution plan.
 - ⚡ **Lightweight & Fast:** Built for speed, keeping your hands on the keyboard.
+
 ---
 
 ## 📦 Installation
@@ -24,17 +23,14 @@
 Install the tool globally using npm:
 
 ```bash
-npm install -g youmna-git
+npm install -g youmna-git-glance
 ```
-----------
-# 🦋 youmna-git (ygit)
 
-**The AI-Powered Git Assistant that makes your workflow glide.**
+Then use it anywhere with:
 
-[![npm version](https://img.shields.io/npm/v/youmna-git.svg)](https://www.npmjs.com/package/youmna-git)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-`youmna-git` is a professional-grade CLI tool that transforms your terminal into a smart dashboard. Powered by **Google Gemini 1.5 Flash**, it doesn't just show you your git status—it helps you write code, review bugs, and understand your history.
+```bash
+ygit
+```
 
 ---
 
@@ -42,12 +38,12 @@ npm install -g youmna-git
 
 To use the AI features (Commit, Review, Chat), you need to get a free API Key from Google:
 
-1.  **Get your Key:** Go to [Google AI Studio](https://aistudio.google.com/) and click **"Get API key"**.
-2.  **Add to Environment:** Create a file named `.env` in your project root or add it to your shell profile:
-    ```text
-    GEMINI_API_KEY=your_key_here
-    ```
-3.  **Important:** Make sure your `.env` `.npmrc` files are added to your `.gitignore` so your key stays private!
+1. **Get your Key:** Go to [Google AI Studio](https://aistudio.google.com/) and click **"Get API key"**.
+2. **Add to Environment:** Create a file named `.env` in your project root or add it to your shell profile:
+   ```text
+   GEMINI_API_KEY=your_key_here
+   ```
+3. **Important:** Make sure your `.env` and `.npmrc` files are added to your `.gitignore` so your key stays private!
 
 ---
 
@@ -70,9 +66,18 @@ ygit commit
 ygit review
 ```
 
-⭐ **Ask a question about your history**
+⭐ **Ask a question about your repository history**
 ```bash
 ygit chat "What features did I add yesterday?"
+```
+
+The chat command uses advanced keyword extraction to intelligently search your entire git history. It identifies important keywords from your question (like "features", "login", "bugfix") and searches across all branches to find the most relevant commits. If no matches are found, it falls back to your 10 most recent commits, ensuring you always get contextual answers about your work.
+
+**Chat Examples:**
+```bash
+ygit chat "When did I fix the authentication bug?"
+ygit chat "What changes did I make to the database module?"
+ygit chat "Show me commits related to the API refactor"
 ```
 
 ⭐ **Get help resolving active merge conflicts**
@@ -80,17 +85,38 @@ ygit chat "What features did I add yesterday?"
 ygit merge-help
 ```
 
+---
 
-🤝 Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-1- Fork the Project
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-2- Create your Feature Branch (git checkout -b feature/AmazingFeature)
+---
 
-3- Commit your Changes (git commit -m 'Add some AmazingFeature')
+## 📄 License
 
-4- Push to the Branch (git push origin feature/AmazingFeature)
+This project is licensed under the MIT License. Feel free to use and modify it.
 
-5- Open a Pull Request
+---
+
+## 📞 Support & Community
+
+- **Issues:** If you run into any trouble, please open an [issue on GitHub](https://github.com/YoumnaSalloum/git-glance-cli/issues).
+- **Feature Requests:** Have an idea for a new AI command? Let us know in the issues!
+- **Pull Requests:** We love community contributions. Feel free to fork the repo and submit a PR.
+
+---
+
+## 🚀 Happy Coding! 🎉
+
+---
+
+## Keywords
+
+`git` `gemini` `ai` `cli` `automation` `code-review` `commit-messages` `merge-conflicts` `git-assistant` `developer-tools` `terminal` `productivity`

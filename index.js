@@ -95,19 +95,52 @@ log(createBox(text(result.response.text()), {
   });
 
 // 3. Repo Chat
+// 3. Repo Chat (Advanced Keyword Scout)
 program
   .command('chat <question>')
-  .description('Ask a question about your git history')
+  .description('Ask a question about your git history (Smart Context)')
   .action(async (question) => {
-    const spinner = createSpinner('Consulting history...').start();
+    const spinner = createSpinner('Scanning history for context...').start();
     try {
-      const logs = await git.log({ n: 10 });
-      const prompt = `Based on these git logs: ${JSON.stringify(logs)}, answer: ${question}`;
+      // 1. Identify "keywords" from the question (simple split for now)
+      // Example: "When did I fix the login?" -> ['fix', 'login']
+      const keywords = question.toLowerCase().split(' ').filter(word => word.length > 3);
+      
+      let contextLogs;
+      
+      if (keywords.length > 0) {
+        // 2. Search logs for these keywords across the ENTIRE history
+        // We use --grep for messages and -i for case-insensitive
+        const searchOptions = {
+          '--all': null,
+          '--grep': keywords,
+          '-n': 15, // Get top 15 relevant matches
+        };
+        contextLogs = await git.log(searchOptions);
+      }
+
+      // 3. Fallback: If no keywords or no matches, get the most recent 10
+      if (!contextLogs || contextLogs.all.length === 0) {
+        contextLogs = await git.log({ n: 10 });
+      }
+
+      const prompt = `
+        You are a Git History Expert. 
+        Based on these relevant git logs: ${JSON.stringify(contextLogs.all)}
+        
+        Answer the following user question clearly: "${question}"
+        
+        If you found the answer in an older commit, mention the date and hash.
+      `;
+
       const result = await model.generateContent(prompt);
 
       spinner.stop();
-      log(`${accent('🤖 Gemini Assistant:')} ${text(result.response.text())}`);
-    } catch (err) { spinner.fail(error('Chat failed.')); logError(err.message); }
+      log(`${accent.bold('🤖 Gemini Assistant:')}\n${text(result.response.text())}`);
+    } catch (err) { 
+      spinner.fail(error('Chat failed.')); 
+      logError(err.message); 
+    }
   });
 
 // 4. AI-Powered Merge Conflict Helper (FIXED)
