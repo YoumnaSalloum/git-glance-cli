@@ -1,10 +1,9 @@
-#!/usr/bin/env node
 import { program } from 'commander';
 import { simpleGit } from 'simple-git';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import 'dotenv/config';
 import { primary, success, accent, error, text, createSpinner, createBox, createProgressBar, log, logError } from './utils/ui.js'; // Updated import
-import fs from 'fs'; // Ensure you have this import at the top
+import fs from 'fs'; 
 
 const git = simpleGit();
 
@@ -14,7 +13,6 @@ const model = genAI.getGenerativeModel({
   model: process.env.GEMINI_MODEL || "gemini-3-flash-preview" 
 });
 
-// --- 📊 THE DASHBOARD (Default) ---
 async function showDashboard() {
   const spinner = createSpinner('Loading Git Dashboard...').start();
   try {
@@ -37,14 +35,13 @@ ${primary.bold('Status:')}    ${text(status.files.length + ' files modified')}
 ${primary.bold('Remote:')}    ${text(remote[0]?.refs.fetch || 'None')}
     `;
 
-    log(createBox(stats, { title: '🚀 Youmna Git Dashboard (Hacker Mode)', borderColor: primary.toString() })); // Using new createBox
+    log(createBox(stats, { title: '🚀 Youmna Git Dashboard (Hacker Mode)', borderColor: primary.toString() })); 
   } catch (err) {
     spinner.fail(error('Failed to load dashboard.'));
     logError(err.message);
   }
 }
 
-// --- 🤖 AI COMMANDS ---
 program.name('ygit').version('2.2.0').description('Personal AI Git Assistant powered by Gemini');
 
 // 1. AI Commit Suggestion
@@ -104,8 +101,7 @@ log(createBox(text(result.response.text()), {
     } catch (err) { spinner.fail(error('Review failed.')); logError(err.message); }
   });
 
-// 3. Repo Chat
-// 3. Repo Chat (Advanced Keyword Scout)
+// 3. Repo Chat with Smart Context
 program
   .command('chat <question>')
   .description('Ask a question about your git history (Smart Context)')
@@ -117,12 +113,11 @@ program
       let contextLogs;
       
       if (keywords.length > 0) {
-        // Build arguments manually to avoid syntax errors like '=15'
         const args = [
           '--all',
-          '--grep=' + keywords.join('|'), // Use a pipe for "OR" search
-          '-i', // Case-insensitive
-          '-n', '15' // Correct way to pass the number
+          '--grep=' + keywords.join('|'), 
+          '-i', 
+          '-n', '15'
         ];
         contextLogs = await git.log(args);
       }
@@ -142,7 +137,7 @@ program
     }
   });
 
-// 4. AI-Powered Merge Conflict Helper (FIXED)
+// 4. AI-Powered Merge Conflict Resolution
 program
   .command('merge-help')
   .description('Analyze and suggest resolutions for merge conflicts')
@@ -150,7 +145,7 @@ program
     const spinner = createSpinner('Scanning for 💔 conflicts...').start();
     try {
       const status = await git.status();
-      const conflictedFiles = status.conflicted; // Get files that are "unmerged"
+      const conflictedFiles = status.conflicted;
 
       if (conflictedFiles.length === 0) {
         spinner.succeed(success('No merge conflicts detected! Everything is clean.'));
@@ -159,8 +154,6 @@ program
 
       const conflictDetails = [];
       for (const file of conflictedFiles) {
-        // We read from the disk (worktree) instead of the Git index
-        // This avoids the "Stage 0" error
         const content = await fs.promises.readFile(file, 'utf8');
         if (content.includes('<<<<<<<')) {
           conflictDetails.push(`File: ${file}\n${content}`);
@@ -190,7 +183,6 @@ program
     }
   });
 
-// Default behavior
 if (!process.argv.slice(2).length) {
   showDashboard();
 }

@@ -1,28 +1,24 @@
-// utils/ui.js
 import chalk from 'chalk';
 import boxen from 'boxen';
 import ora from 'ora';
-import cliProgress from 'cli-progress'; // New dependency for progress bar
+import cliProgress from 'cli-progress'; 
 
 // --- Theme Colors ---
-export const primary = chalk.hex('#00FFFF'); // Electric Cyan
-export const success = chalk.hex('#00FF00'); // Bright Green
-export const accent = chalk.hex('#FF00FF'); // Magenta
-export const warning = chalk.hex('#FFFF00'); // Yellow
-export const error = chalk.hex('#FF0000'); // Red
+export const primary = chalk.hex('#00FFFF');
+export const success = chalk.hex('#00FF00');
+export const accent = chalk.hex('#FF00FF');
+export const warning = chalk.hex('#FFFF00');
+export const error = chalk.hex('#FF0000');
 export const text = chalk.whiteBright;
 
 // --- CLI Components ---
-// utils/ui.js
 export const createSpinner = (textMsg, color = primary) => {
-    // Safe check for hex codes
     const match = color.toString().match(/#(?:[0-9a-fA-F]{3}){1,2}/);
     const spinnerColor = match ? match[0] : 'cyan'; 
 
     return ora({
         text: color(textMsg),
         spinner: { interval: 80, frames: ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'] },
-        // Don't pass hex codes to 'ora', use 'cyan' as a fallback
         color: spinnerColor.startsWith('#') ? 'cyan' : spinnerColor 
     });
 };
@@ -30,8 +26,8 @@ export const createSpinner = (textMsg, color = primary) => {
 export const createProgressBar = (name = "Progress", barSize = 20) => {
     const bar = new cliProgress.SingleBar({
         format: `${accent('{bar}')} ${text('{percentage}%')} | {value}/{total} ${primary(name)}`,
-        barCompleteChar: '\u2588', // Full block
-        barIncompleteChar: '\u2591', // Light shade
+        barCompleteChar: '\u2588', 
+        barIncompleteChar: '\u2591',
         hideCursor: true,
         barsize: barSize,
         linewrap: false
@@ -43,7 +39,7 @@ export const createBox = (content, options = {}) => {
     const defaultOptions = {
         padding: 1,
         margin: 1,
-        borderStyle: 'double', // Hacker Mode border
+        borderStyle: 'double',
         borderColor: primary.name,
         titleAlignment: 'center',
         ...options
