@@ -54,8 +54,12 @@ program
   .action(async () => {
     const spinner = createSpinner('AI is analyzing changes...').start();
     try {
-      const diff = await git.diff();
-      if (!diff) return spinner.info(text('No changes found to describe.'));
+      const diff = await git.diff(['--cached']); 
+      
+      if (!diff) {
+        spinner.info(text('No staged changes found. Use "git add" first!'));
+        return;
+      }
 
       const prompt = `Write a professional, concise one-line git commit message for these changes: ${diff.substring(0, 5000)}`;
       const result = await model.generateContent(prompt);
@@ -81,8 +85,14 @@ program
   .action(async () => {
     const spinner = createSpinner('Gemini is inspecting your code...', accent).start();
     try {
-      const diff = await git.diff();
-      const prompt = `You are a senior reviewer. Spot bugs or messy logic in this diff. Be concise: ${diff.substring(0, 5000)}`;
+      const diff = await git.diff(['HEAD']);
+      
+      if (!diff) {
+        spinner.info(text('No changes found to review.'));
+        return;
+      }
+      
+      const prompt = `You are a senior reviewer. Spot bugs or messy logic in this diff: ${diff.substring(0, 5000)}`;
       const result = await model.generateContent(prompt);
       
       spinner.stop();
@@ -102,37 +112,26 @@ program
   .action(async (question) => {
     const spinner = createSpinner('Scanning history for context...').start();
     try {
-      // 1. Identify "keywords" from the question (simple split for now)
-      // Example: "When did I fix the login?" -> ['fix', 'login']
       const keywords = question.toLowerCase().split(' ').filter(word => word.length > 3);
       
       let contextLogs;
       
       if (keywords.length > 0) {
-        // 2. Search logs for these keywords across the ENTIRE history
-        // We use --grep for messages and -i for case-insensitive
-        const searchOptions = {
-          '--all': null,
-          '--grep': keywords,
-          '-n': 15, // Get top 15 relevant matches
-        };
-        contextLogs = await git.log(searchOptions);
+        // Build arguments manually to avoid syntax errors like '=15'
+        const args = [
+          '--all',
+          '--grep=' + keywords.join('|'), // Use a pipe for "OR" search
+          '-i', // Case-insensitive
+          '-n', '15' // Correct way to pass the number
+        ];
+        contextLogs = await git.log(args);
       }
 
-      // 3. Fallback: If no keywords or no matches, get the most recent 10
       if (!contextLogs || contextLogs.all.length === 0) {
-        contextLogs = await git.log({ n: 10 });
+        contextLogs = await git.log(['-n', '10']);
       }
 
-      const prompt = `
-        You are a Git History Expert. 
-        Based on these relevant git logs: ${JSON.stringify(contextLogs.all)}
-        
-        Answer the following user question clearly: "${question}"
-        
-        If you found the answer in an older commit, mention the date and hash.
-      `;
-
+      const prompt = `You are a Git Expert. Answer this question based on these logs: ${JSON.stringify(contextLogs.all)}. Question: "${question}"`;
       const result = await model.generateContent(prompt);
 
       spinner.stop();
