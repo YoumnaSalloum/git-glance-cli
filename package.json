@@ -1,7 +1,7 @@
 {
   
     "name": "youmna-git-glance",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "repository": {
       "type": "git",
       "url": "https://github.com/YoumnaSalloum/youmna-git-glance.git"
@@ -11,6 +11,10 @@
     }
   
   ,"description": "AI-powered Git assistant using Google Gemini with advanced features 🦋",
+  "type": "module",
+  "bin": {
+    "ygit": "./index.js"
+  },
   "keywords": [
     "git",
     "gemini",
@@ -20,10 +24,7 @@
     "commit-messages",
     "merge-conflicts"
   ],
-  "type": "module",
-  "bin": {
-    "ygit": "./index.js"
-  },
+  "author": "Youmna Salloum",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "boxen": "^7.1.1",
