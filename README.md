@@ -125,9 +125,3 @@ This project is licensed under the MIT License. Feel free to use and modify it.
 ---
 
 ## 🚀 Happy Coding! 🎉
-
----
-
-## Keywords
-
-`git` `gemini` `ai` `cli` `automation` `code-review` `commit-messages` `merge-conflicts` `git-assistant` `developer-tools` `terminal` `productivity`
