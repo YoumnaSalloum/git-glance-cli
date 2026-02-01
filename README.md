@@ -62,9 +62,14 @@ To use the AI features (Commit, Review, Chat), you need to get a free API Key fr
 
 Simply type `ygit` to launch the main dashboard, or use these commands:
 
-⭐ **Launch the interactive dashboard**
+⭐ **View all available commands**
 ```bash
 ygit
+```
+
+⭐ **Launch the Hacker Mode Dashboard**
+```bash
+ygit -d
 ```
 
 ⭐ **Generate an AI commit message for staged changes**

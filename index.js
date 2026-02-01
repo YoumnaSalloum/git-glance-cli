@@ -3,8 +3,9 @@ import { program } from 'commander';
 import { simpleGit } from 'simple-git';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import 'dotenv/config';
-import { primary, success, accent, error, text, createSpinner, createBox, createProgressBar, log, logError } from './utils/ui.js'; // Updated import
+import { primary, success, accent, error, text, createSpinner, createBox, log, logError } from './utils/ui.js'; 
 import fs from 'fs'; 
+import { readFile } from 'fs/promises';
 
 const git = simpleGit();
 
@@ -36,14 +37,20 @@ ${primary.bold('Status:')}    ${text(status.files.length + ' files modified')}
 ${primary.bold('Remote:')}    ${text(remote[0]?.refs.fetch || 'None')}
     `;
 
-    log(createBox(stats, { title: '🚀 Youmna Git Dashboard (Hacker Mode)', borderColor: primary.toString() })); 
+    log(createBox(stats, { title: '🚀 Youmna Git Dashboard (Hacker Mode)', borderColor: 'cyan' })); 
   } catch (err) {
     spinner.fail(error('Failed to load dashboard.'));
     logError(err.message);
   }
 }
 
-program.name('ygit').version('2.2.0').description('Personal AI Git Assistant powered by Gemini');
+const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
+
+program
+  .name('ygit')
+  .version(pkg.version, '-v, --version')
+  .description(pkg.description)
+  .option('-d, --dashboard', 'Show the graphical git dashboard');
 
 // 1. AI Commit Suggestion
 program
@@ -95,10 +102,10 @@ program
       
       spinner.stop();
 
-log(createBox(text(result.response.text()), { 
-    title: '🔍 AI Code Review', 
-    borderColor: 'magenta' 
-}));
+      log(createBox(text(result.response.text()), { 
+          title: '🔍 AI Code Review', 
+          borderColor: 'magenta' 
+      }));
     } catch (err) { spinner.fail(error('Review failed.')); logError(err.message); }
   });
 
@@ -184,8 +191,14 @@ program
     }
   });
 
-if (!process.argv.slice(2).length) {
-  showDashboard();
-}
+
+program.action(() => {
+  const options = program.opts();
+  if (options.dashboard) {
+    showDashboard();
+  } else {
+    program.help(); 
+  }
+});
 
 program.parse(process.argv);
