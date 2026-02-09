@@ -205,6 +205,7 @@ program.action(async () => {
   if (options.resetKey) {
     config.delete('gemini_api_key');
     log(success('API Key has been reset. Run any command to enter a new one.'));
+    await getApiKey();
     return;
   }
   if (options.dashboard) {
