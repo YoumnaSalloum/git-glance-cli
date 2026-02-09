@@ -6,14 +6,52 @@ import 'dotenv/config';
 import { primary, success, accent, error, text, createSpinner, createBox, log, logError } from './utils/ui.js'; 
 import fs from 'fs'; 
 import { readFile } from 'fs/promises';
+import Conf from 'conf'; 
+import readline from 'readline';
 
 const git = simpleGit();
+const config = new Conf({ projectName: 'youmna-git-glance' });
 
-// --- Gemini AI Setup ---
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ 
-  model: process.env.GEMINI_MODEL || "gemini-3-flash-preview" 
-});
+async function getApiKey() {
+  let apiKey = config.get('gemini_api_key') || process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+
+    log(primary.bold('\nWelcome to ygit! 🦋'));
+    log(text('To use AI features, you need a Gemini API Key.'));
+    log(text('Get one for free at: https://aistudio.google.com/\n'));
+
+    apiKey = await new Promise((resolve) => {
+      rl.question(accent('Enter your Gemini API Key: '), (answer) => {
+        resolve(answer.trim());
+        rl.close();
+      });
+    });
+
+    if (apiKey) {
+      config.set('gemini_api_key', apiKey);
+      log(success('✅ API Key saved locally! You won\'t need to enter it again.\n'));
+    } else {
+      logError('API Key is required to use Gemini features.');
+      process.exit(1);
+    }
+  }
+  return apiKey;
+}
+
+async function initGemini() {
+  const apiKey = await getApiKey();
+  const genAI = new GoogleGenerativeAI(apiKey);
+  return genAI.getGenerativeModel({ 
+   model: process.env.GEMINI_MODEL || "gemini-1.5-flash"
+  });
+}
+
+const modelPromise = initGemini(); 
 
 async function showDashboard() {
   const spinner = createSpinner('Loading Git Dashboard...').start();
@@ -50,13 +88,15 @@ program
   .name('ygit')
   .version(pkg.version, '-v, --version')
   .description(pkg.description)
-  .option('-d, --dashboard', 'Show the graphical git dashboard');
+  .option('-d, --dashboard', 'Show the graphical git dashboard')
+  .option('--reset-key', 'Reset your Gemini API Key'); 
 
 // 1. AI Commit Suggestion
 program
   .command('commit')
   .description('Suggest a commit message using Gemini AI')
   .action(async () => {
+    const model = await modelPromise;  
     const spinner = createSpinner('AI is analyzing changes...').start();
     try {
       const diff = await git.diff(['--cached']); 
@@ -73,40 +113,39 @@ program
       log(createBox(success(result.response.text().trim()), { title: '✨ Gemini Suggestion', borderColor: 'green' }));
     } catch (err) {
       spinner.stop();
-      if (err.message.includes('429')) {
-        logError("Quota reached! Please wait 60 seconds before trying again.");
-      } else if (err.message.includes('404')) {
-        logError("Model not found. Ensure line 12 is: gemini-3-flash-preview");
-      } else {
-        logError(err.message);
-      }
+      handleAiError(err);
     }
   });
+
+function handleAiError(err) {
+  if (err.message.includes('429')) {
+    logError("Quota reached! Using your own API key usually solves this. Try again in 60s.");
+  } else if (err.message.includes('API_KEY_INVALID')) {
+    logError("Invalid API Key. Run 'ygit --reset-key' to update it.");
+    config.delete('gemini_api_key');
+  } else {
+    logError(err.message);
+  }
+}
 
 // 2. AI Code Review
 program
   .command('review')
   .description('Let Gemini review your code for bugs')
   .action(async () => {
+    const model = await modelPromise;
     const spinner = createSpinner('Gemini is inspecting your code...', accent).start();
     try {
       const diff = await git.diff(['HEAD']);
-      
       if (!diff) {
         spinner.info(text('No changes found to review.'));
         return;
       }
-      
       const prompt = `You are a senior reviewer. Spot bugs or messy logic in this diff: ${diff.substring(0, 5000)}`;
       const result = await model.generateContent(prompt);
-      
       spinner.stop();
-
-      log(createBox(text(result.response.text()), { 
-          title: '🔍 AI Code Review', 
-          borderColor: 'magenta' 
-      }));
-    } catch (err) { spinner.fail(error('Review failed.')); logError(err.message); }
+      log(createBox(text(result.response.text()), { title: '🔍 AI Code Review', borderColor: 'magenta' }));
+    } catch (err) { spinner.fail(error('Review failed.')); handleAiError(err); }
   });
 
 // 3. Repo Chat with Smart Context
@@ -114,35 +153,23 @@ program
   .command('chat <question>')
   .description('Ask a question about your git history (Smart Context)')
   .action(async (question) => {
+    const model = await modelPromise;
     const spinner = createSpinner('Scanning history for context...').start();
     try {
       const keywords = question.toLowerCase().split(' ').filter(word => word.length > 3);
-      
       let contextLogs;
-      
       if (keywords.length > 0) {
-        const args = [
-          '--all',
-          '--grep=' + keywords.join('|'), 
-          '-i', 
-          '-n', '15'
-        ];
+        const args = ['--all', '--grep=' + keywords.join('|'), '-i', '-n', '15'];
         contextLogs = await git.log(args);
       }
-
       if (!contextLogs || contextLogs.all.length === 0) {
         contextLogs = await git.log(['-n', '10']);
       }
-
       const prompt = `You are a Git Expert. Answer this question based on these logs: ${JSON.stringify(contextLogs.all)}. Question: "${question}"`;
       const result = await model.generateContent(prompt);
-
       spinner.stop();
       log(`${accent.bold('🤖 Gemini Assistant:')}\n${text(result.response.text())}`);
-    } catch (err) { 
-      spinner.fail(error('Chat failed.')); 
-      logError(err.message); 
-    }
+    } catch (err) { spinner.fail(error('Chat failed.')); handleAiError(err); }
   });
 
 // 4. AI-Powered Merge Conflict Resolution
@@ -150,16 +177,15 @@ program
   .command('merge-help')
   .description('Analyze and suggest resolutions for merge conflicts')
   .action(async () => {
+    const model = await modelPromise;
     const spinner = createSpinner('Scanning for 💔 conflicts...').start();
     try {
       const status = await git.status();
       const conflictedFiles = status.conflicted;
-
       if (conflictedFiles.length === 0) {
         spinner.succeed(success('No merge conflicts detected! Everything is clean.'));
         return;
       }
-
       const conflictDetails = [];
       for (const file of conflictedFiles) {
         const content = await fs.promises.readFile(file, 'utf8');
@@ -167,33 +193,20 @@ program
           conflictDetails.push(`File: ${file}\n${content}`);
         }
       }
-
-      if (conflictDetails.length === 0) {
-        spinner.fail(error('Conflicted files found, but no markers (<<<<<<<) detected.'));
-        return;
-      }
-
-      spinner.text = primary('Gemini is resolving the puzzle...');
-      const prompt = `You are a Git Expert. Explain the conflict and suggest a solution for:
-      ${conflictDetails.join('\n\n').substring(0, 8000)}`;
-
+      const prompt = `Suggest a solution for: ${conflictDetails.join('\n\n').substring(0, 8000)}`;
       const result = await model.generateContent(prompt);
       spinner.stop();
-
-      log(createBox(text(result.response.text()), { 
-          title: '🛡️ AI Merge Resolution', 
-          borderColor: 'red' 
-      }));
-
-    } catch (err) {
-      spinner.stop();
-      logError("Could not analyze conflicts: " + err.message);
-    }
+      log(createBox(text(result.response.text()), { title: '🛡️ AI Merge Resolution', borderColor: 'red' }));
+    } catch (err) { spinner.stop(); handleAiError(err); }
   });
 
-
-program.action(() => {
+program.action(async () => {
   const options = program.opts();
+  if (options.resetKey) {
+    config.delete('gemini_api_key');
+    log(success('API Key has been reset. Run any command to enter a new one.'));
+    return;
+  }
   if (options.dashboard) {
     showDashboard();
   } else {

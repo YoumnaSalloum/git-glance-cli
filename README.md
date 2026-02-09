@@ -5,7 +5,6 @@
 
 `youmna-git-glance` is an AI-native CLI that transforms your repository's history into an active knowledge base. Powered by Google Gemini, it uses intelligent keyword extraction to scout your entire commit history, providing AI-powered code reviews, automated professional commits, and context-aware chat that truly understands your codebase.
 
-
 ---
 
 ## 🎥 Demo
@@ -45,17 +44,29 @@ ygit
 
 ---
 
-## 🔑 Setup
+## 🔑 Setup & Configuration
 
-To use the AI features (Commit, Review, Chat), you need to get a free API Key from Google:
+To keep `ygit` private and free, it uses your own Google Gemini API key.
 
-1. **Get your Key:** Go to [Google AI Studio](https://aistudio.google.com/) and click **"Get API key"**.
-2. **Add to Environment:** Create a file named `.env` in your project root or add it to your shell profile:
-   ```text
-   GEMINI_API_KEY=your_key_here
-   ```
-3. **Important:** Make sure your `.env` and `.npmrc` files are added to your `.gitignore` so your key stays private!
+### 1. Get your API Key
 
+* Go to [Google AI Studio](https://aistudio.google.com/).
+* Click **"Create API key"**.
+* Copy your new key.
+
+### 2. Connect your Key
+
+To initialize the AI for the first time or to update your credentials, follow these steps:
+
+- **Trigger the Setup:** Run the reset command in your terminal:
+```bash
+ygit --reset-key
+
+```
+- **Enter the Key:** The tool will prompt you with: **"Enter your Gemini API Key"**.
+- **Save:** Paste your key and hit Enter. You will see a success message: **"✅ API Key saved locally!"**.
+
+*Your key is now stored securely in your local machine's config. You won't have to enter it again for future commands.*
 ---
 
 ## 🚀 Usage
