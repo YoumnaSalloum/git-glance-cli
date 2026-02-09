@@ -48,23 +48,9 @@ ygit
 
 To keep `ygit` private and free, it uses your own Google Gemini API key.
 
-### 1. Get your API Key
-
-* Go to [Google AI Studio](https://aistudio.google.com/).
-* Click **"Create API key"**.
-* Copy your new key.
-
-### 2. Connect your Key
-
-To initialize the AI for the first time or to update your credentials, follow these steps:
-
-- **Trigger the Setup:** Run the reset command in your terminal:
-```bash
-ygit --reset-key
-
-```
-- **Enter the Key:** The tool will prompt you with: **"Enter your Gemini API Key"**.
-- **Save:** Paste your key and hit Enter. You will see a success message: **"✅ API Key saved locally!"**.
+1. Get your Key: From [Google AI Studio](https://aistudio.google.com/). 
+2. Initial Setup: Run `ygit --reset-key`. The tool will immediately ask you to paste your new key. 
+3. Automatic Prompt: If you forget to set it up, ygit will automatically ask for your key the first time you try to use an AI command like ygit chat or ygit commit.
 
 *Your key is now stored securely in your local machine's config. You won't have to enter it again for future commands.*
 ---
