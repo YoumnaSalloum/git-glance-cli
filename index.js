@@ -47,7 +47,7 @@ async function initGemini() {
   const apiKey = await getApiKey();
   const genAI = new GoogleGenerativeAI(apiKey);
   return genAI.getGenerativeModel({ 
-   model: process.env.GEMINI_MODEL || "gemini-1.5-flash"
+   model: process.env.GEMINI_MODEL || "gemini-3-flash-preview"
   });
 }
 
