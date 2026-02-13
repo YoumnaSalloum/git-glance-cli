@@ -49,20 +49,27 @@ ygit
 
 To keep `ygit` private and free, it uses your own Google Gemini API key.
 
-1. Get your Key: From [Google AI Studio](https://aistudio.google.com/). 
+1. Get your Key: Visit [Google AI Studio](https://aistudio.google.com/) and create a new API key. 
 2. Initial Setup: Run `ygit --reset-key`. The tool will immediately ask you to paste your new key. 
 3. Automatic Prompt: If you forget to set it up, ygit will automatically ask for your key the first time you try to use an AI command like ygit chat or ygit commit.
+4. Advanced Model Switching (Optional): By default, ygit uses gemini-3-flash-preview. You can override this by creating a .env file in your project root or setting an environment variable:
+```bash
+      GEMINI_MODEL=gemini-1.5-flash
+```
 
 *Your key is now stored securely in your local machine's config. You won't have to enter it again for future commands.*
 ---
 
 ## 🚀 Usage
 
-Simply type `ygit` to launch the main dashboard, or use these commands:
-
-⭐ **View all available commands**
+⭐ **View available commands & help**
 ```bash
 ygit
+```
+
+⭐ **Check version**
+```bash
+ygit -v
 ```
 
 ⭐ **Launch the Hacker Mode Dashboard**
