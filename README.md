@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 `youmna-git-glance` is an AI-native CLI that transforms your repository's history into an active knowledge base. Powered by Google Gemini, it uses intelligent keyword extraction to scout your entire commit history, providing AI-powered code reviews, automated professional commits, and context-aware chat that truly understands your codebase.
+
 ---
 ## ⚡ Quick Look: Dashboard & AI Chat
 ![ygit in action](demo.gif)
