@@ -58,7 +58,9 @@ To keep `ygit` private and free, it uses your own Google Gemini API key.
       GEMINI_MODEL=gemini-1.5-flash
 ```
 
-*Your key is now stored securely in your local machine's config. You won't have to enter it again for future commands.*
+> [!IMPORTANT]
+> Your key is now stored securely in your local machine's config. You won't have to enter it again for future commands.
+
 ---
 
 ## 🚀 Usage
