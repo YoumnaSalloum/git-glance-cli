@@ -128,20 +128,43 @@ function handleAiError(err) {
   }
 }
 
+function prepareDiffForAI(diff, charLimit = 7000) {
+  if (!diff) return null;
+  
+  if (diff.length > 50000) {
+      return diff.substring(0, charLimit) + "\n... [Diff truncated due to extreme size]";
+  }
+
+  const cleaned = diff
+    .split('\n')
+    .filter(line => 
+        !line.startsWith('diff --git') && 
+        !line.startsWith('index ') && 
+        !line.startsWith('--- ') && 
+        !line.startsWith('+++ ')
+    )
+    .join('\n');
+
+  return cleaned.substring(0, charLimit);
+}
+
 // 2. AI Code Review
 program
   .command('review')
   .description('Let Gemini review your code for bugs')
   .action(async () => {
     const model = await modelPromise;
-    const spinner = createSpinner('Gemini is inspecting your code...', accent).start();
+    const spinner = createSpinner('Gemini is inspecting code for bugs...', accent).start();
     try {
-      const diff = await git.diff(['HEAD']);
-      if (!diff) {
-        spinner.info(text('No changes found to review.'));
-        return;
-      }
-      const prompt = `You are a senior reviewer. Spot bugs or messy logic in this diff: ${diff.substring(0, 5000)}`;
+      const rawDiff = await git.diff(['HEAD']); 
+      const diff = prepareDiffForAI(rawDiff, 10000);
+      
+     if (!diff) {
+        spinner.info(text('No new changes to review. Use "ygit chat" to ask questions about already committed code!'));
+      return;
+    }
+      
+      const prompt = `You are a senior software engineer. Perform a code review. Spot logic bugs, security risks, or messy patterns in this diff:\n${diff}`;
       const result = await model.generateContent(prompt);
       spinner.stop();
       log(createBox(text(result.response.text()), { title: '🔍 AI Code Review', borderColor: 'magenta' }));
