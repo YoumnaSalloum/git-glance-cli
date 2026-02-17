@@ -172,6 +172,27 @@ program
     } catch (err) { spinner.fail(error('Chat failed.')); handleAiError(err); }
   });
 
+  function extractConflictBlocks(content, contextWindow = 5) {
+  const lines = content.split('\n');
+  const blocks = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    if (lines[i].startsWith('<<<<<<<')) {
+      const start = Math.max(0, i - contextWindow);
+      let end = i;
+      while (end < lines.length && !lines[end].startsWith('>>>>>>>')) {
+        end++;
+      }
+      const finalEnd = Math.min(lines.length, end + contextWindow);
+      blocks.push(lines.slice(start, finalEnd).join('\n'));
+      i = end; 
+    }
+    i++;
+  }
+  return blocks.join('\n---\n');
+}
+
 // 4. AI-Powered Merge Conflict Resolution
 program
   .command('merge-help')
@@ -181,19 +202,18 @@ program
     const spinner = createSpinner('Scanning for 💔 conflicts...').start();
     try {
       const status = await git.status();
-      const conflictedFiles = status.conflicted;
-      if (conflictedFiles.length === 0) {
-        spinner.succeed(success('No merge conflicts detected! Everything is clean.'));
+      if (status.conflicted.length === 0) {
+        spinner.succeed(success('No conflicts!'));
         return;
       }
       const conflictDetails = [];
-      for (const file of conflictedFiles) {
+      for (const file of status.conflicted) {
         const content = await fs.promises.readFile(file, 'utf8');
-        if (content.includes('<<<<<<<')) {
-          conflictDetails.push(`File: ${file}\n${content}`);
-        }
+        const blocks = extractConflictBlocks(content);
+        if (blocks) conflictDetails.push(`FILE: ${file}\n${blocks}`);
       }
-      const prompt = `Suggest a solution for: ${conflictDetails.join('\n\n').substring(0, 8000)}`;
+
+      const prompt = `Provide a resolution for these code conflicts:\n${conflictDetails.join('\n')}`;
       const result = await model.generateContent(prompt);
       spinner.stop();
       log(createBox(text(result.response.text()), { title: '🛡️ AI Merge Resolution', borderColor: 'red' }));
